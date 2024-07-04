@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru">
   <head>
+    <link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Заголовок страницы</title>
   </head>
-  <body>
-    <h2>Форма для отправки данных на сервер</h2>
-    <form action="/index" method="get">
+  <body class="body-style">
+    <h2 class="header-style">Форма для отправки данных на сервер</h2>
+    <form class="form-style" action="/index" method="get">
       <label for="point1">Точка 1:</label><br>
-      <input type="text" id="point1" name="point1" placeholder="42.3 44.5"><br>
+      <input class="input-text-style" type="text" id="point1" name="point1" placeholder="42.3 44.5"><br>
       <label for="point2">Точка 2:</label><br>
-      <input type="text" id="point2" name="point2" placeholder="48.9 50.4"><br>
+      <input class="input-text-style" type="text" id="point2" name="point2" placeholder="48.9 50.4"><br>
       <label for="nodes">Количество узлов:</label><br>
-      <input type="number" id="nodes" name="nodes"><br><br>
-      <input type="submit" value="Отправить">
+      <input class="input-number-style" type="number" id="nodes" name="nodes"><br><br>
+      <input type="submit" value="Отправить" class="submit-button-style">
     </form>
     <p>Ответ от сервера:</p>
     {% for msg in get_flashed_messages() %}
-    <div>{{msg}}</div>
+    <div class="div-style">{{msg}}</div>
     {% endfor %}
   </body>
 </html>
