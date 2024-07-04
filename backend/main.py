@@ -52,5 +52,5 @@ def getLineData(point1: str, point2: str, nodes: str) -> str:
 
 
 if __name__ == "__main__":
-    app.secret_key = 'kill your self'
+    app.secret_key = 'secret key'
     app.run(debug=True)
