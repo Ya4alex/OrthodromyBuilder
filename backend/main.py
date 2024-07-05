@@ -44,18 +44,22 @@ def normolize_coord(coord: float) -> float:
     return (coord + 180) % 360 - 180
 
 
-def calc_orthodromy_solution(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[List[float]]:
+
+def calc_orthodromy_solution(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[
+    List[float]]:
     if cs == "EPSG:3857":
         line_points = calc_orthodromy_mercator(begin, end, nodes_count)
     else:
         begin = (normolize_coord(begin[0]), normolize_coord(begin[1]))
         end = (normolize_coord(end[0]), normolize_coord(end[1]))
         line_points = calc_orthodromy(begin, end, cs, nodes_count)
-    
+
     return line_points
 
 
-def calc_orthodromy(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[List[float]]:
+
+def calc_orthodromy(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[
+    List[float]]:
     geoid = CRS(cs).get_geod()
     if geoid is None:
         raise Exception
@@ -63,12 +67,13 @@ def calc_orthodromy(begin: Tuple[float, float], end: Tuple[float, float], cs: st
     return line_points
 
 
-def calc_orthodromy_mercator(begin: Tuple[float, float], end: Tuple[float, float], nodes_count: int) -> List[List[float]]:
+def calc_orthodromy_mercator(begin: Tuple[float, float], end: Tuple[float, float], nodes_count: int) -> List[
+    List[float]]:
     cs = "EPSG:4326"
     begin = transform_mercator_to_wgs(begin)
     end = transform_mercator_to_wgs(end)
     print(begin, end)
-    line_points = calc_orthodromy(begin, end, cs, nodes_count)  
+    line_points = calc_orthodromy(begin, end, cs, nodes_count)
     line_points = [list(transform_wgs_to_mercator((point[0], point[1]))) for point in line_points]
     print(line_points)
     return line_points

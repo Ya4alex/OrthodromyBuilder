@@ -1,4 +1,4 @@
-import useProjection, { Projection } from '../hooks/useProjection'
+import useProjection, { Projection, transformLine } from '../hooks/useProjection'
 
 import React, { useRef, useEffect, useState } from 'react'
 import 'ol/ol.css'
@@ -22,7 +22,7 @@ import Stroke from 'ol/style/Stroke'
 import iconUrl from '../../public/pin.png'
 
 export interface OrthodromyParams {
-  line: Coordinate[]
+  line: [number, number][]
   EPSG: string
 }
 
@@ -144,7 +144,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
   }, [formData, projection, mapProjection])
 
   useEffect(() => {
-    const cords = orthodromy.line.map((coordinate) => transform(coordinate, orthodromy.EPSG, mapProjection.EPSG))
+    const cords = transformLine(orthodromy.line, orthodromy.EPSG, mapProjection.EPSG)
     updateOrAddLinestring(cords)
   }, [orthodromy, projection, mapProjection])
 

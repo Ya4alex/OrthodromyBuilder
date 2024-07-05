@@ -1,4 +1,8 @@
+import { transform } from 'ol/proj'
 import { useState } from 'react'
+
+export const DEGREE_HALH_P = 180
+export const METRIC_HALF_P = 20037508.34
 
 export interface Projection {
   name: 'WGS84' | 'СК-42' | 'Меркатор'
@@ -33,3 +37,26 @@ const useProjection = (initialProjection: keyof typeof ProjectionsDict) => {
 }
 
 export default useProjection
+
+export const transformLine = (line: [number, number][], src: string, dst: string) => {
+  if (line.length === 0) return []
+  let nodes = line.map((coordinate) => transform(coordinate, src, dst))
+  console.log(nodes)
+
+  let halfP = DEGREE_HALH_P
+  if (dst == 'EPSG:3857') {
+    halfP = METRIC_HALF_P
+  }
+
+  let fly180 = Math.abs(nodes[0][0] - nodes[nodes.length - 1][0]) > halfP
+  if (fly180) {
+    console.log('fly180', fly180)
+    console.log(nodes)
+    nodes = nodes.map((node) => {
+      if (node[0] > 0) return node
+      return [node[0] + halfP * 2, node[1]]
+    })
+    console.log(nodes)
+  }
+  return nodes
+}

@@ -20,7 +20,7 @@ function App() {
     point1_lat: 55,
     point2_lng: -82,
     point2_lat: 23,
-    count: 30,
+    count: 100,
   })
   const [currentPoint, setCurrentPoint] = useState<null | 'point1' | 'point2'>(null)
   const [orthodromy, setOrthodromy] = useState<OrthodromyParams>({ line: [], EPSG: projection.EPSG })
@@ -78,16 +78,6 @@ function App() {
         return coordinate.split(' ').map((x) => parseFloat(x))
       }) as [number, number][]
 
-      let fly180 = Math.abs(nodes[0][0] - nodes[nodes.length - 1][0]) > 180
-      if (fly180) {
-        console.log('fly180', fly180)
-        console.log(nodes)
-        nodes = nodes.map((node) => {
-          if (node[0] > 0) return node
-          return [node[0] + 360, node[1]]
-        })
-        console.log(nodes)
-      }
       setOrthodromy(() => ({
         line: nodes,
         EPSG: projEPSG,
