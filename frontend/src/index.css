@@ -13,6 +13,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(25rem, 1fr) minmax(25rem, 3fr);
+  grid-template-rows: 1fr;
+  min-width: 100%;
+}
+
+
 a {
   font-weight: 500;
   color: #646cff;

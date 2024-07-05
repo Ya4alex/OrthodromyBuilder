@@ -1,0 +1,49 @@
+.orhodromy-form {
+    display: flex;
+    flex-direction: column;
+    margin: 0.5em;
+}
+
+.orhodromy-form p {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1em;
+    margin: 0;
+    margin-bottom: 1em;
+}
+
+
+.orhodromy-form label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.orhodromy-form h4 {
+    text-align: left;
+    margin: 0;
+}
+
+.orhodromy-form p label span {
+    text-align: right;
+    min-width: 2em;
+}
+
+.orhodromy-form input {
+    padding: 0.5em;
+    display: flex;
+    flex-direction: row;
+    border-radius: 0.5em;
+    width: 100%;
+}
+
+.orhodromy-form-button-picker {
+    padding: 0;
+    width: 2em;
+    height: 2em;
+}
+
+.orhodromy-form-button-picker-active {
+    background-color: #646cff;
+}
