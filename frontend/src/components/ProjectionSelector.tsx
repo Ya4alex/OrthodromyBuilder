@@ -1,5 +1,6 @@
 import React from 'react'
 import { Projection, ProjectionsDict } from '../hooks/useProjection'
+import './ProjectionSelector.css'
 
 interface ProjectionSelectorProps extends React.HTMLAttributes<HTMLSelectElement> {
   name?: string

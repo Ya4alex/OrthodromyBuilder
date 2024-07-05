@@ -86,7 +86,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         font: '20px Arial',
         offsetY: -37, // Offset text vertically above the icon
         fill: new Fill({ color: '#ffffff' }),
-        stroke: new Stroke({ color: '#000000', width: 2 }),
+        stroke: new Stroke({ color: '#242424', width: 2 }),
       }),
     })
 
@@ -102,7 +102,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         center: oldView
           ? transform(oldView.getCenter() as Coordinate, oldView?.getProjection(), mapProjection.EPSG)
           : [0, 0],
-        zoom: oldView ? oldView.getZoom() : 3.7,
+        zoom: oldView ? oldView.getZoom() : 2.5,
       })
 
       const vectorLayer = new VectorLayer({
