@@ -46,6 +46,7 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
         <h4>Projection:</h4>
         <ProjectionSelector name='main' projection={projection} changeProjection={changeProjection} />
       </label>
+      <p></p>
       <label>
         <button
           type='button'
@@ -62,7 +63,6 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
           <span>lng:</span>
           <input type='number' name='point1_lng' value={formData.point1_lng} onChange={handleChange} required />
         </label>
-        <br />
         <label>
           <span>lat:</span>
           <input type='number' name='point1_lat' value={formData.point1_lat} onChange={handleChange} required />
@@ -85,7 +85,6 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
           <span>lng:</span>
           <input type='number' name='point2_lng' value={formData.point2_lng} onChange={handleChange} required />
         </label>
-        <br />
         <label>
           <span>lat:</span>
           <input type='number' name='point2_lat' value={formData.point2_lat} onChange={handleChange} required />

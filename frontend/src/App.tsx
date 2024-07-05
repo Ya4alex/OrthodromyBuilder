@@ -16,10 +16,10 @@ interface RequestData {
 function App() {
   const { projection, changeProjection } = useProjection('WGS84')
   const [formData, setFormData] = useState<userFormData>({
-    point1_lng: 0,
-    point1_lat: 0,
-    point2_lng: 0,
-    point2_lat: 0,
+    point1_lng: 37,
+    point1_lat: 55,
+    point2_lng: -82,
+    point2_lat: 23,
     count: 30,
   })
   const [currentPoint, setCurrentPoint] = useState<null | 'point1' | 'point2'>(null)
