@@ -11,11 +11,22 @@ export const ProjectionsDict: { [key: string]: Projection } = {
   Меркатор: { name: 'Меркатор', EPSG: 'EPSG:3857' },
 }
 
+export type ProjectionChangeArg =
+  | keyof typeof ProjectionsDict
+  | ((prevProjection: Projection) => keyof typeof ProjectionsDict)
+
 const useProjection = (initialProjection: keyof typeof ProjectionsDict) => {
   const [projection, setProjection] = useState<Projection>(ProjectionsDict[initialProjection])
 
-  const changeProjection = (newProjection: keyof typeof ProjectionsDict) => {
-    setProjection(ProjectionsDict[newProjection])
+  const changeProjection = (arg: ProjectionChangeArg) => {
+    const newProjectionKey = typeof arg === 'function' ? arg(projection) : arg
+    const newProjection = ProjectionsDict[newProjectionKey]
+
+    if (newProjection.name === projection.name) {
+      return
+    }
+
+    setProjection(newProjection)
   }
 
   return { projection, changeProjection }
