@@ -18,7 +18,7 @@ interface OrhodromyFormProps {
   changeProjection: (newProjection: keyof typeof ProjectionsDict) => void
   currentPoint: null | 'point1' | 'point2'
   setCurrentPoint: (point: 'point1' | 'point2' | null) => void
-  handleFormSubmit: (formData: userFormData) => void
+  handleFormSubmit: (formData: userFormData, projESPG: string) => void
 }
 
 const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
@@ -37,7 +37,7 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    handleFormSubmit(formData)
+    handleFormSubmit(formData, projection.EPSG)
   }
 
   return (

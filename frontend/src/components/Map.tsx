@@ -11,7 +11,7 @@ import { transform } from 'ol/proj'
 import { Coordinate } from 'ol/coordinate'
 import { userFormData } from './Form'
 import VectorSource from 'ol/source/Vector'
-import { Point } from 'ol/geom'
+import { LineString, Point } from 'ol/geom'
 import VectorLayer from 'ol/layer/Vector'
 import Style from 'ol/style/Style'
 import Icon from 'ol/style/Icon'
@@ -21,19 +21,50 @@ import Stroke from 'ol/style/Stroke'
 
 import iconUrl from '../../public/pin.png'
 
+export interface OrthodromyParams {
+  line: Coordinate[]
+  EPSG: string
+}
+
 interface MapComponentProps {
   projection: Projection
   onclickHangler: (lat: number, lng: number) => void
   formData: userFormData
+  orthodromy: OrthodromyParams
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler, formData }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler, formData, orthodromy }) => {
   const { projection: mapProjection, changeProjection: changeMapProjection } = useProjection('Меркатор')
   const mapElement = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<Map | null>(null)
-  const [vectorSource] = useState(new VectorSource())
   const point1Feature = useRef(new Feature())
   const point2Feature = useRef(new Feature())
+  const [vectorSource] = useState(
+    new VectorSource({
+      features: [
+        point1Feature.current,
+        point2Feature.current,
+        new Feature({
+          geometry: new LineString([]),
+        }),
+      ],
+    }),
+  )
+
+  const updateOrAddLinestring = (coordinates: Coordinate[]) => {
+    const existingFeatures = vectorSource.getFeatures()
+    const lineFeature = existingFeatures.find((f) => f.getGeometry() instanceof LineString)
+
+    if (lineFeature) {
+      lineFeature.setGeometry(new LineString(coordinates))
+    } else {
+      vectorSource.addFeature(
+        new Feature({
+          geometry: new LineString(coordinates),
+        }),
+      )
+    }
+  }
 
   const updateOrAddFeature = (feature: Feature, coordinates: Coordinate, labelText: string) => {
     const existingFeatures = vectorSource.getFeatures()
@@ -76,6 +107,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
 
       const vectorLayer = new VectorLayer({
         source: vectorSource,
+        style: new Style({
+          stroke: new Stroke({
+            color: '#FF0000',
+            width: 2,
+          }),
+        }),
       })
 
       mapRef.current = new Map({
@@ -114,6 +151,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         onclickHangler(coordinate[0], coordinate[1])
       })
     }
+    const cords = orthodromy.line.map((coordinate) => transform(coordinate, orthodromy.EPSG, mapProjection.EPSG))
+    updateOrAddLinestring(cords)
   }, [mapProjection, projection])
 
   return (

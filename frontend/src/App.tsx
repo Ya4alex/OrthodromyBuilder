@@ -1,5 +1,5 @@
 import './App.css'
-import MapComponent from './components/Map'
+import MapComponent, { OrthodromyParams } from './components/Map'
 import useProjection, { ProjectionsDict } from './hooks/useProjection'
 import OrhodromyForm, { userFormData } from './components/Form'
 import { useState } from 'react'
@@ -13,10 +13,6 @@ interface RequestData {
   count: number
 }
 
-interface ResponseData {
-  res: string
-}
-
 function App() {
   const { projection, changeProjection } = useProjection('WGS84')
   const [formData, setFormData] = useState<userFormData>({
@@ -27,6 +23,7 @@ function App() {
     count: 30,
   })
   const [currentPoint, setCurrentPoint] = useState<null | 'point1' | 'point2'>(null)
+  const [orthodromy, setOrthodromy] = useState<OrthodromyParams>({ line: [], EPSG: projection.EPSG })
 
   const handleMapClick = (lng: number, lat: number) => {
     setCurrentPoint((current) => {
@@ -66,17 +63,27 @@ function App() {
     setCurrentPoint(null)
   }
 
-  const handleFormSubmit = async (formData: userFormData) => {
+  const handleFormSubmit = async (form: userFormData, projEPSG: string) => {
     const queryParams = {
-      point1: `POINT(${formData.point1_lng} ${formData.point1_lat})`,
-      point2: `POINT(${formData.point2_lng},${formData.point2_lat})`,
-      cs: projection.EPSG,
-      count: formData.count,
+      point1: `POINT(${form.point1_lng} ${form.point1_lat})`,
+      point2: `POINT(${form.point2_lng},${form.point2_lat})`,
+      cs: projEPSG,
+      count: form.count,
     } as RequestData
     try {
-      const response = await axios.get<ResponseData>('/api/login', { params: queryParams })
+      const response = await axios.get<string>('/api/orthodromy', { params: queryParams })
 
       console.log('Ответ от сервера:', response.data)
+      const unstring = response.data.replace('LINESTRING(', '').replace(')', '').split(', ')
+      const nodes = unstring.map((coordinate) => {
+        const [lng, lat] = coordinate.split(' ')
+        return [parseFloat(lat), parseFloat(lng)]
+      }) as [number, number][]
+      console.log(nodes)
+      setOrthodromy({
+        line: nodes,
+        EPSG: projEPSG,
+      })
     } catch (error) {
       console.error('Ошибка при отправке запроса:', error)
     }
@@ -86,8 +93,6 @@ function App() {
     <>
       <div>
         <h1>Building orthodromy</h1>
-        <p>Name: {projection.name}</p>
-        <p>{projection.EPSG}</p>
 
         <OrhodromyForm
           formData={formData}
@@ -99,7 +104,12 @@ function App() {
           handleFormSubmit={handleFormSubmit}
         />
       </div>
-      <MapComponent projection={projection} onclickHangler={handleMapClick} formData={formData} />
+      <MapComponent
+        projection={projection}
+        onclickHangler={handleMapClick}
+        formData={formData}
+        orthodromy={orthodromy}
+      />
     </>
   )
 }

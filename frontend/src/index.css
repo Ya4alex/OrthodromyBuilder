@@ -17,10 +17,10 @@
   margin: 0;
   padding: 0;
   height: 100vh;
-  display: flex;
-  flex-direction: row;
-
-  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(25rem, 1fr) minmax(25rem, 3fr);
+  grid-template-rows: 1fr;
+  min-width: 100%;
 }
 
 
