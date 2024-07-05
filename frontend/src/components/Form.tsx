@@ -18,6 +18,7 @@ interface OrhodromyFormProps {
   changeProjection: (newProjection: keyof typeof ProjectionsDict) => void
   currentPoint: null | 'point1' | 'point2'
   setCurrentPoint: (point: 'point1' | 'point2' | null) => void
+  handleFormSubmit: (formData: userFormData) => void
 }
 
 const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
@@ -27,6 +28,7 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
   changeProjection,
   currentPoint,
   setCurrentPoint,
+  handleFormSubmit,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -35,12 +37,15 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Добавьте здесь логику для отправки данных формы
-    console.log(formData)
+    handleFormSubmit(formData)
   }
 
   return (
     <form onSubmit={handleSubmit} className='orhodromy-form'>
+      <label>
+        <h4>Projection:</h4>
+        <ProjectionSelector name='main' projection={projection} changeProjection={changeProjection} />
+      </label>
       <label>
         <button
           type='button'
@@ -86,9 +91,8 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
           <input type='number' name='point2_lat' value={formData.point2_lat} onChange={handleChange} required />
         </label>
       </p>
-      <h4>Projection:</h4>
+      <h4>Params:</h4>
       <p>
-        <ProjectionSelector name='main' projection={projection} changeProjection={changeProjection} />
         <label>
           <span style={{ minWidth: '3em' }}>nodes:</span>
           <input type='number' name='count' value={formData.count} onChange={handleChange} required />

@@ -4,6 +4,18 @@ import useProjection, { ProjectionsDict } from './hooks/useProjection'
 import OrhodromyForm, { userFormData } from './components/Form'
 import { useState } from 'react'
 import { transform } from 'ol/proj'
+import axios from 'axios'
+
+interface RequestData {
+  point1: string
+  point2: string
+  cs: string
+  count: number
+}
+
+interface ResponseData {
+  res: string
+}
 
 function App() {
   const { projection, changeProjection } = useProjection('WGS84')
@@ -18,7 +30,6 @@ function App() {
 
   const handleMapClick = (lng: number, lat: number) => {
     setCurrentPoint((current) => {
-      console.log(current)
       if (current) {
         setFormData((prevData) => ({
           ...prevData,
@@ -27,7 +38,7 @@ function App() {
         }))
         return null // Сбрасываем режим после установки точки
       }
-      return current 
+      return current
     })
   }
 
@@ -55,10 +66,26 @@ function App() {
     setCurrentPoint(null)
   }
 
+  const handleFormSubmit = async (formData: userFormData) => {
+    const queryParams = {
+      point1: `POINT(${formData.point1_lng} ${formData.point1_lat})`,
+      point2: `POINT(${formData.point2_lng},${formData.point2_lat})`,
+      cs: projection.EPSG,
+      count: formData.count,
+    } as RequestData
+    try {
+      const response = await axios.get<ResponseData>('/api/login', { params: queryParams })
+
+      console.log('Ответ от сервера:', response.data)
+    } catch (error) {
+      console.error('Ошибка при отправке запроса:', error)
+    }
+  }
+
   return (
     <>
       <div>
-        <h1>Current Projection</h1>
+        <h1>Building orthodromy</h1>
         <p>Name: {projection.name}</p>
         <p>{projection.EPSG}</p>
 
@@ -69,6 +96,7 @@ function App() {
           changeProjection={changeProjectionWithTrans}
           currentPoint={currentPoint}
           setCurrentPoint={setCurrentPoint}
+          handleFormSubmit={handleFormSubmit}
         />
       </div>
       <MapComponent projection={projection} onclickHangler={handleMapClick} formData={formData} />

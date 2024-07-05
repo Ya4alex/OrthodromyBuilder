@@ -15,6 +15,11 @@ import { Point } from 'ol/geom'
 import VectorLayer from 'ol/layer/Vector'
 import Style from 'ol/style/Style'
 import Icon from 'ol/style/Icon'
+import Text from 'ol/style/Text'
+import Fill from 'ol/style/Fill'
+import Stroke from 'ol/style/Stroke'
+
+import iconUrl from '../../public/pin.png'
 
 interface MapComponentProps {
   projection: Projection
@@ -30,12 +35,31 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
   const point1Feature = useRef(new Feature())
   const point2Feature = useRef(new Feature())
 
-  const updateOrAddFeature = (feature: Feature, coordinates: Coordinate) => {
+  const updateOrAddFeature = (feature: Feature, coordinates: Coordinate, labelText: string) => {
     const existingFeatures = vectorSource.getFeatures()
     if (!existingFeatures.includes(feature)) {
       vectorSource.addFeature(feature)
     }
+
     feature.setGeometry(new Point(coordinates))
+
+    // Create custom style with an icon and text
+    const style = new Style({
+      image: new Icon({
+        anchor: [0.5, 1],
+        src: iconUrl,
+        scale: 0.8,
+      }),
+      text: new Text({
+        text: labelText,
+        font: '20px Arial',
+        offsetY: -37, // Offset text vertically above the icon
+        fill: new Fill({ color: '#ffffff' }),
+        stroke: new Stroke({ color: '#000000', width: 2 }),
+      }),
+    })
+
+    feature.setStyle(style)
   }
 
   useEffect(() => {
@@ -52,12 +76,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
 
       const vectorLayer = new VectorLayer({
         source: vectorSource,
-        style: new Style({
-          image: new Icon({
-            anchor: [0.5, 1],
-            src: 'https://openlayers.org/en/latest/examples/data/icon.png', // replace with the path to your icon
-          }),
-        }),
       })
 
       mapRef.current = new Map({
@@ -84,8 +102,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
     const coordinates1 = transform([formData.point1_lng, formData.point1_lat], projection.EPSG, mapProjection.EPSG)
     const coordinates2 = transform([formData.point2_lng, formData.point2_lat], projection.EPSG, mapProjection.EPSG)
 
-    updateOrAddFeature(point1Feature.current, coordinates1)
-    updateOrAddFeature(point2Feature.current, coordinates2)
+    updateOrAddFeature(point1Feature.current, coordinates1, '1')
+    updateOrAddFeature(point2Feature.current, coordinates2, '2')
   }, [formData, projection, mapProjection])
 
   useEffect(() => {
@@ -96,7 +114,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         onclickHangler(coordinate[0], coordinate[1])
       })
     }
-  }, [mapProjection, projection, onclickHangler])
+  }, [mapProjection, projection])
 
   return (
     <div style={{ width: '100%', position: 'relative' }}>
