@@ -1,6 +1,6 @@
 import useProjection, { Projection } from '../hooks/useProjection'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import 'ol/ol.css'
 import { Feature, Map, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
@@ -18,7 +18,6 @@ import Icon from 'ol/style/Icon'
 
 interface MapComponentProps {
   projection: Projection
-  // orthodromies: OrthodrObject[]
   onclickHangler: (lat: number, lng: number) => void
   formData: userFormData
 }
@@ -27,6 +26,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
   const { projection: mapProjection, changeProjection: changeMapProjection } = useProjection('Меркатор')
   const mapElement = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<Map | null>(null)
+  const [vectorSource] = useState(new VectorSource())
+  const point1Feature = useRef(new Feature())
+  const point2Feature = useRef(new Feature())
+
+  const updateOrAddFeature = (feature: Feature, coordinates: Coordinate) => {
+    const existingFeatures = vectorSource.getFeatures()
+    if (!existingFeatures.includes(feature)) {
+      vectorSource.addFeature(feature)
+    }
+    feature.setGeometry(new Point(coordinates))
+  }
 
   useEffect(() => {
     if (mapElement.current) {
@@ -38,21 +48,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
           ? transform(oldView.getCenter() as Coordinate, oldView?.getProjection(), mapProjection.EPSG)
           : [0, 0],
         zoom: oldView ? oldView.getZoom() : 3.7,
-      })
-
-      const vectorSource = new VectorSource({
-        features: [
-          new Feature({
-            geometry: new Point(
-              transform([formData.point1_lng, formData.point1_lat], projection.EPSG, mapProjection.EPSG),
-            ),
-          }),
-          new Feature({
-            geometry: new Point(
-              transform([formData.point2_lng, formData.point2_lat], projection.EPSG, mapProjection.EPSG),
-            ),
-          }),
-        ],
       })
 
       const vectorLayer = new VectorLayer({
@@ -83,7 +78,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         mapRef.current.setTarget(undefined)
       }
     }
-  }, [mapProjection])
+  }, [mapProjection, vectorSource])
+
+  useEffect(() => {
+    const coordinates1 = transform([formData.point1_lng, formData.point1_lat], projection.EPSG, mapProjection.EPSG)
+    const coordinates2 = transform([formData.point2_lng, formData.point2_lat], projection.EPSG, mapProjection.EPSG)
+
+    updateOrAddFeature(point1Feature.current, coordinates1)
+    updateOrAddFeature(point2Feature.current, coordinates2)
+  }, [formData, projection, mapProjection])
 
   useEffect(() => {
     if (mapRef.current) {
@@ -93,7 +96,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
         onclickHangler(coordinate[0], coordinate[1])
       })
     }
-  }, [mapProjection, projection])
+  }, [mapProjection, projection, onclickHangler])
 
   return (
     <div style={{ width: '100%', position: 'relative' }}>
