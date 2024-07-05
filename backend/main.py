@@ -1,7 +1,12 @@
+from pprint import pprint
+
 from flask import Flask, request, abort, send_file, Response
-from pyproj import CRS, Transformer
-from typing import Tuple, List
+from pyproj import CRS
 import re
+
+from functools import wraps
+from pyproj import Transformer
+
 
 STATIC_FOLDER = '../frontend/dist'
 
@@ -29,73 +34,57 @@ def orthodromy():
         cs = request.args['cs']
         if cs not in ALLOWED_EPSG:
             raise TypeError
-        point1 = tuple(map(float, re.findall(POINT_PATTERN, point1_s)[0]))
-        point2 = tuple(map(float, re.findall(POINT_PATTERN, point2_s)[0]))
-        return orthodromy_to_wkt(calc_orthodromy_solution(point1, point2, cs, count))
+        point1 = normalise(tuple(map(float, re.findall(POINT_PATTERN, point1_s)[0])), cs)
+        point2 = normalise(tuple(map(float, re.findall(POINT_PATTERN, point2_s)[0])), cs)
+
+        return orthodromy_to_wkt(calc_orthodromy(point1, point2, cs, count))
     except KeyError:
         abort(400, description="missing args")
     except (TypeError, IndexError):
         abort(400, description="incorrect args")
-    except Exception:
+    except:
         abort(400, description="error")
 
 
-def normolize_coord(coord: float) -> float:
-    return (coord + 180) % 360 - 180
+def normalise(point, cs):
+    if cs != 'EPSG:3857':
+        return (point[0] + 180) % 360 - 180, point[1]
+    return (point[0] + 20037508.34) % (20037508.34 * 2) - 20037508.34, point[1]
 
 
-
-def calc_orthodromy_solution(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[
-    List[float]]:
-    if cs == "EPSG:3857":
-        line_points = calc_orthodromy_mercator(begin, end, nodes_count)
-    else:
-        begin = (normolize_coord(begin[0]), normolize_coord(begin[1]))
-        end = (normolize_coord(end[0]), normolize_coord(end[1]))
-        line_points = calc_orthodromy(begin, end, cs, nodes_count)
-
-    return line_points
+def transform_points(points, transformer):
+    return [transformer.transform(x, y) for x, y in points]
 
 
+def orthodromy_decorator(func):
+    @wraps(func)
+    def wrapper(begin, end, cs, nodes_count):
+        if cs == 'EPSG:3857':
+            transformer_to_wgs84 = Transformer.from_crs('EPSG:3857', 'EPSG:4326', always_xy=True)
+            transformer_to_mercator = Transformer.from_crs('EPSG:4326', 'EPSG:3857', always_xy=True)
 
-def calc_orthodromy(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[
-    List[float]]:
+            begin_wgs84 = transformer_to_wgs84.transform(*begin)
+            end_wgs84 = transformer_to_wgs84.transform(*end)
+
+            result_wgs84 = func(begin_wgs84, end_wgs84, 'EPSG:4326', nodes_count)
+            result_mercator = transform_points(result_wgs84, transformer_to_mercator)
+
+            return result_mercator
+        else:
+            return func(begin, end, cs, nodes_count)
+
+    return wrapper
+
+
+@orthodromy_decorator
+def calc_orthodromy(begin: (float, float), end: (float, float), cs: str, nodes_count: int) -> [(float, float)]:
     geoid = CRS(cs).get_geod()
-    if geoid is None:
-        raise Exception
     line_points = [begin] + geoid.npts(begin[0], begin[1], end[0], end[1], nodes_count) + [end]
+    pprint(line_points)
     return line_points
 
 
-def calc_orthodromy_mercator(begin: Tuple[float, float], end: Tuple[float, float], nodes_count: int) -> List[
-    List[float]]:
-    cs = "EPSG:4326"
-    begin = transform_mercator_to_wgs(begin)
-    end = transform_mercator_to_wgs(end)
-    print(begin, end)
-    line_points = calc_orthodromy(begin, end, cs, nodes_count)
-    line_points = [list(transform_wgs_to_mercator((point[0], point[1]))) for point in line_points]
-    print(line_points)
-    return line_points
-
-
-def transform_wgs_to_mercator(point: Tuple[float, float]) -> Tuple[float, float]:
-    epsg4326 = CRS("EPSG:4326")
-    epsg3857 = CRS("EPSG:3857")
-    transformer = Transformer.from_crs(epsg4326, epsg3857)
-    new_point = transformer.transform(point[0], point[1])
-    return new_point
-
-
-def transform_mercator_to_wgs(point: Tuple[float, float]) -> Tuple[float, float]:
-    epsg4326 = CRS("EPSG:4326")
-    epsg3857 = CRS("EPSG:3857")
-    transformer = Transformer.from_crs(epsg3857, epsg4326)
-    new_point = transformer.transform(point[0], point[1])
-    return new_point
-
-
-def orthodromy_to_wkt(line_points: List[List[float]]) -> str:
+def orthodromy_to_wkt(line_points: [(float, float)]) -> str:
     return f"LINESTRING({', '.join([f"{point[0]} {point[1]}" for point in line_points])})"
 
 
