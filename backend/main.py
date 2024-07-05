@@ -29,8 +29,8 @@ def orthodromy():
         cs = request.args['cs']
         if cs not in ALLOWED_EPSG:
             raise TypeError
-        point1 = tuple(map(lambda x: (float(x) + 180) % 360 - 180, re.findall(POINT_PATTERN, point1_s)[0]))
-        point2 = tuple(map(lambda x: (float(x) + 180) % 360 - 180, re.findall(POINT_PATTERN, point2_s)[0]))
+        point1 = tuple(map(float, re.findall(POINT_PATTERN, point1_s)[0]))
+        point2 = tuple(map(float, re.findall(POINT_PATTERN, point2_s)[0]))
         return orthodromy_to_wkt(calc_orthodromy_solution(point1, point2, cs, count))
     except KeyError:
         abort(400, description="missing args")
@@ -39,13 +39,21 @@ def orthodromy():
     except Exception:
         abort(400, description="error")
 
+
+def normolize_coord(coord: float) -> float:
+    return (coord + 180) % 360 - 180
+
+
 def calc_orthodromy_solution(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[List[float]]:
     if cs == "EPSG:3857":
         line_points = calc_orthodromy_mercator(begin, end, nodes_count)
     else:
+        begin = (normolize_coord(begin[0]), normolize_coord(begin[1]))
+        end = (normolize_coord(end[0]), normolize_coord(end[1]))
         line_points = calc_orthodromy(begin, end, cs, nodes_count)
     
     return line_points
+
 
 def calc_orthodromy(begin: Tuple[float, float], end: Tuple[float, float], cs: str, nodes_count: int) -> List[List[float]]:
     geoid = CRS(cs).get_geod()
@@ -59,8 +67,10 @@ def calc_orthodromy_mercator(begin: Tuple[float, float], end: Tuple[float, float
     cs = "EPSG:4326"
     begin = transform_mercator_to_wgs(begin)
     end = transform_mercator_to_wgs(end)
+    print(begin, end)
     line_points = calc_orthodromy(begin, end, cs, nodes_count)  
     line_points = [list(transform_wgs_to_mercator((point[0], point[1]))) for point in line_points]
+    print(line_points)
     return line_points
 
 
