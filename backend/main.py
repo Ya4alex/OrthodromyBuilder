@@ -28,8 +28,8 @@ def orthodromy():
         cs = request.args['cs']
         if cs not in ALLOWED_EPSG:
             raise TypeError
-        point1 = tuple(map(float, re.findall(POINT_PATTERN, point1_s)[0]))
-        point2 = tuple(map(float, re.findall(POINT_PATTERN, point2_s)[0]))
+        point1 = tuple(map(lambda x: (float(x) + 180) % 360 - 180, re.findall(POINT_PATTERN, point1_s)[0]))
+        point2 = tuple(map(lambda x: (float(x) + 180) % 360 - 180, re.findall(POINT_PATTERN, point2_s)[0]))
 
         return orthodromy_to_wkt(calc_orthodromy(point1, point2, cs, count))
     except KeyError:
@@ -44,7 +44,6 @@ def calc_orthodromy(begin: (float, float), end: (float, float), cs: str, nodes_c
     geoid = CRS(cs).get_geod()
     print(geoid)
     line_points = [begin] + geoid.npts(begin[0], begin[1], end[0], end[1], nodes_count) + [end]
-    print(line_points)
     return line_points
 
 

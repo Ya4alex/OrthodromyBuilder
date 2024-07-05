@@ -145,7 +145,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
 
   useEffect(() => {
     const cords = orthodromy.line.map((coordinate) => transform(coordinate, orthodromy.EPSG, mapProjection.EPSG))
-    console.log(cords)
     updateOrAddLinestring(cords)
   }, [orthodromy, projection, mapProjection])
 

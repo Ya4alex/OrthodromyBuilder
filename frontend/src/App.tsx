@@ -74,10 +74,20 @@ function App() {
       const response = await axios.get<string>('/api/orthodromy', { params: queryParams })
 
       const unstring = response.data.replace('LINESTRING(', '').replace(')', '').split(', ')
-      const nodes = unstring.map((coordinate) => {
-        const [lng, lat] = coordinate.split(' ')
-        return [parseFloat(lng), parseFloat(lat)]
+      let nodes = unstring.map((coordinate) => {
+        return coordinate.split(' ').map((x) => parseFloat(x))
       }) as [number, number][]
+
+      let fly180 = Math.abs(nodes[0][0] - nodes[nodes.length - 1][0]) > 180
+      if (fly180) {
+        console.log('fly180', fly180)
+        console.log(nodes)
+        nodes = nodes.map((node) => {
+          if (node[0] > 0) return node
+          return [node[0] + 360, node[1]]
+        })
+        console.log(nodes)
+      }
       setOrthodromy(() => ({
         line: nodes,
         EPSG: projEPSG,
