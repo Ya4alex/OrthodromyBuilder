@@ -1,20 +1,22 @@
 from flask import Flask, request, abort, send_file, Response
-from pyproj import Geod
+from pyproj import CRS
 import re
+
+STATIC_FOLDER = '../frontend/dist'
 
 app = Flask(__name__,
             static_url_path='/static',
-            static_folder='./static')
+            static_folder=STATIC_FOLDER)
 
 ALLOWED_EPSG_CODES = [4326, 4284, 3857]
 ALLOWED_EPSG = list(map(lambda c: f'EPSG:{c}', ALLOWED_EPSG_CODES))
 
-POINT_PATTERN = r'POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)'
+POINT_PATTERN = r'POINT\((-?\d*\.?\d+) (-?\d*\.?\d+)\)'
 
 
 @app.route("/")
 def index() -> Response:
-    return send_file('static/index.html')
+    return send_file(f'{STATIC_FOLDER}/index.html')
 
 
 @app.route("/api/orthodromy", methods=["GET"])
@@ -39,8 +41,10 @@ def orthodromy():
 
 
 def calc_orthodromy(begin: (float, float), end: (float, float), cs: str, nodes_count: int) -> [(float, float)]:
-    geoid = Geod(init=cs)
-    line_points = geoid.npts(begin[0], begin[1], end[0], end[1], nodes_count)
+    geoid = CRS(cs).get_geod()
+    print(geoid)
+    line_points = [begin] + geoid.npts(begin[0], begin[1], end[0], end[1], nodes_count) + [end]
+    print(line_points)
     return line_points
 
 
