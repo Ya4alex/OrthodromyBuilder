@@ -66,24 +66,22 @@ function App() {
   const handleFormSubmit = async (form: userFormData, projEPSG: string) => {
     const queryParams = {
       point1: `POINT(${form.point1_lng} ${form.point1_lat})`,
-      point2: `POINT(${form.point2_lng},${form.point2_lat})`,
+      point2: `POINT(${form.point2_lng} ${form.point2_lat})`,
       cs: projEPSG,
       count: form.count,
     } as RequestData
     try {
       const response = await axios.get<string>('/api/orthodromy', { params: queryParams })
 
-      console.log('Ответ от сервера:', response.data)
       const unstring = response.data.replace('LINESTRING(', '').replace(')', '').split(', ')
       const nodes = unstring.map((coordinate) => {
         const [lng, lat] = coordinate.split(' ')
-        return [parseFloat(lat), parseFloat(lng)]
+        return [parseFloat(lng), parseFloat(lat)]
       }) as [number, number][]
-      console.log(nodes)
-      setOrthodromy({
+      setOrthodromy(() => ({
         line: nodes,
         EPSG: projEPSG,
-      })
+      }))
     } catch (error) {
       console.error('Ошибка при отправке запроса:', error)
     }

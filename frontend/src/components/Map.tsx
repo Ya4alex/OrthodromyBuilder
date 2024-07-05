@@ -2,7 +2,7 @@ import useProjection, { Projection } from '../hooks/useProjection'
 
 import React, { useRef, useEffect, useState } from 'react'
 import 'ol/ol.css'
-import { Feature, Map, View } from 'ol'
+import { Feature, Map, MapBrowserEvent, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 import ProjectionSelector from './ProjectionSelector'
@@ -144,15 +144,25 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
   }, [formData, projection, mapProjection])
 
   useEffect(() => {
+    const cords = orthodromy.line.map((coordinate) => transform(coordinate, orthodromy.EPSG, mapProjection.EPSG))
+    console.log(cords)
+    updateOrAddLinestring(cords)
+  }, [orthodromy, projection, mapProjection])
+
+  useEffect(() => {
     if (mapRef.current) {
-      mapRef.current.on('click', (event) => {
+      const clickHandler = (event: MapBrowserEvent<any>) => {
         console.log(event.coordinate, mapProjection.name, '->', projection.name)
         const coordinate = transform(event.coordinate, mapProjection.EPSG, projection.EPSG)
         onclickHangler(coordinate[0], coordinate[1])
-      })
+      }
+
+      mapRef.current.on('click', clickHandler)
+
+      return () => {
+        mapRef.current?.un('click', clickHandler)
+      }
     }
-    const cords = orthodromy.line.map((coordinate) => transform(coordinate, orthodromy.EPSG, mapProjection.EPSG))
-    updateOrAddLinestring(cords)
   }, [mapProjection, projection])
 
   return (
