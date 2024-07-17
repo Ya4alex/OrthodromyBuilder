@@ -4,10 +4,10 @@ import { Projection, ProjectionsDict } from '../hooks/useProjection'
 import ProjectionSelector from './ProjectionSelector'
 
 export interface userFormData {
-  point1_lng: number
   point1_lat: number
-  point2_lng: number
+  point1_lng: number
   point2_lat: number
+  point2_lng: number
   count: number
 }
 
@@ -60,12 +60,12 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
       </label>
       <p>
         <label>
-          <span>lng:</span>
-          <input type='number' name='point1_lng' value={formData.point1_lng} onChange={handleChange} required />
-        </label>
-        <label>
           <span>lat:</span>
           <input type='number' name='point1_lat' value={formData.point1_lat} onChange={handleChange} required />
+        </label>
+        <label>
+          <span>lng:</span>
+          <input type='number' name='point1_lng' value={formData.point1_lng} onChange={handleChange} required />
         </label>
       </p>
 
@@ -82,12 +82,12 @@ const OrhodromyForm: React.FC<OrhodromyFormProps> = ({
       </label>
       <p>
         <label>
-          <span>lng:</span>
-          <input type='number' name='point2_lng' value={formData.point2_lng} onChange={handleChange} required />
+          <span>lat1:</span>
+          <input type='number' name='point2_lat' value={formData.point2_lat} onChange={handleChange} required />
         </label>
         <label>
-          <span>lat:</span>
-          <input type='number' name='point2_lat' value={formData.point2_lat} onChange={handleChange} required />
+          <span>lng:</span>
+          <input type='number' name='point2_lng' value={formData.point2_lng} onChange={handleChange} required />
         </label>
       </p>
       <h4>Params:</h4>

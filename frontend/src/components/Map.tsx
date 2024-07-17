@@ -136,8 +136,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ projection, onclickHangler,
   }, [mapProjection, vectorSource])
 
   useEffect(() => {
-    const coordinates1 = transform([formData.point1_lng, formData.point1_lat], projection.EPSG, mapProjection.EPSG)
-    const coordinates2 = transform([formData.point2_lng, formData.point2_lat], projection.EPSG, mapProjection.EPSG)
+    const coordinates1 = transform([formData.point1_lat, formData.point1_lng], projection.EPSG, mapProjection.EPSG)
+    const coordinates2 = transform([formData.point2_lat, formData.point2_lng], projection.EPSG, mapProjection.EPSG)
 
     updateOrAddFeature(point1Feature.current, coordinates1, '1')
     updateOrAddFeature(point2Feature.current, coordinates2, '2')

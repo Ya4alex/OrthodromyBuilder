@@ -16,22 +16,22 @@ interface RequestData {
 function App() {
   const { projection, changeProjection } = useProjection('WGS84')
   const [formData, setFormData] = useState<userFormData>({
-    point1_lng: 37,
-    point1_lat: 55,
-    point2_lng: -82,
-    point2_lat: 23,
+    point1_lat: 37,
+    point1_lng: 55,
+    point2_lat: -82,
+    point2_lng: 23,
     count: 100,
   })
   const [currentPoint, setCurrentPoint] = useState<null | 'point1' | 'point2'>(null)
   const [orthodromy, setOrthodromy] = useState<OrthodromyParams>({ line: [], EPSG: projection.EPSG })
 
-  const handleMapClick = (lng: number, lat: number) => {
+  const handleMapClick = ( lat: number, lng: number,) => {
     setCurrentPoint((current) => {
       if (current) {
         setFormData((prevData) => ({
           ...prevData,
-          [`${current}_lng`]: lng,
           [`${current}_lat`]: lat,
+          [`${current}_lng`]: lng,
         }))
         return null // Сбрасываем режим после установки точки
       }
@@ -45,17 +45,15 @@ function App() {
     changeProjection((prevProjection) => {
       setFormData((pd) => {
         const p1 =
-          pd.point1_lng && pd.point1_lat
-            ? transform([pd.point1_lng, pd.point1_lat], prevProjection.EPSG, newEPSG)
-            : [pd.point1_lng, pd.point1_lat]
+          pd.point1_lat && pd.point1_lng
+            ? transform([pd.point1_lat, pd.point1_lng], prevProjection.EPSG, newEPSG)
+            : [pd.point1_lat, pd.point1_lng]
         const p2 =
-          pd.point2_lng && pd.point2_lat
-            ? transform([pd.point2_lng, pd.point2_lat], prevProjection.EPSG, newEPSG)
-            : [pd.point2_lng, pd.point2_lat]
+          pd.point2_lat && pd.point2_lng
+            ? transform([pd.point2_lat, pd.point2_lng], prevProjection.EPSG, newEPSG)
+            : [pd.point2_lat, pd.point2_lng]
 
-        console.log(p1, p2)
-
-        return { ...pd, point1_lng: p1[0], point1_lat: p1[1], point2_lng: p2[0], point2_lat: p2[1] }
+        return { ...pd, point1_lat: p1[0], point1_lng: p1[1], point2_lat: p2[0], point2_lng: p2[1] }
       })
       return newProjection
     })
@@ -65,8 +63,8 @@ function App() {
 
   const handleFormSubmit = async (form: userFormData, projEPSG: string) => {
     const queryParams = {
-      point1: `POINT(${form.point1_lng} ${form.point1_lat})`,
-      point2: `POINT(${form.point2_lng} ${form.point2_lat})`,
+      point1: `POINT(${form.point1_lat} ${form.point1_lng})`,
+      point2: `POINT(${form.point2_lat} ${form.point2_lng})`,
       cs: projEPSG,
       count: form.count,
     } as RequestData
