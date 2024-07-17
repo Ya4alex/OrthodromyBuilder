@@ -36,7 +36,8 @@ def orthodromy():
             raise TypeError
         point1 = normalise(tuple(map(float, re.findall(POINT_PATTERN, point1_s)[0])), cs)
         point2 = normalise(tuple(map(float, re.findall(POINT_PATTERN, point2_s)[0])), cs)
-
+        if count == 0:
+            return orthodromy_to_wkt([point1, point2])
         return orthodromy_to_wkt(calc_orthodromy(point1, point2, cs, count))
     except KeyError:
         abort(400, description="missing args")
